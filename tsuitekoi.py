@@ -240,10 +240,12 @@ class Program(object):
 
 
     def authenticate(self):
+        scriptDir = os.path.dirname(os.path.realpath(__file__))
+        authPath = os.path.join(scriptDir, "auth")
         while True:
             auth = tweepy.OAuthHandler(consumerKey, consumerSecret)
             try:
-                with open("auth", 'r') as f:
+                with open(authPath, 'r') as f:
                     key, secret = f.read().split()
                     auth.set_access_token(key, secret)
                 authorized = True
@@ -269,7 +271,7 @@ class Program(object):
                         print "That verifier doesn't work! Try again."
                 print
 
-                with open("auth", 'w') as f:
+                with open(authPath, 'w') as f:
                     s = auth.access_token + '\n' + auth.access_token_secret + '\n'
                     f.write(s)
 
@@ -281,7 +283,7 @@ class Program(object):
             except tweepy.TweepError as e:
                 checkForRateLimitError(e)
                 try:
-                    os.remove("auth")
+                    os.remove(authPath)
                 except OSError:
                     pass
                 print "There was an error authenticating your account."
