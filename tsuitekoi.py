@@ -109,9 +109,10 @@ class Program(object):
                         s = followerName
                         if differenceType == "changedName":
                             s = "{} changed name to {}".format(*followerName)
-
                         print '\t' + s
-                    print
+                    if self.differences[differenceType]:
+                        # Don't want to add newlines for empty sections.
+                        print
             elif not isDifference:
                 t = time.strftime("%B %d %Y", self.previousTime)
                 print "Nothing has happened since {t}, the last time you " \
@@ -228,8 +229,8 @@ class Program(object):
             self.differences[differenceType].iteritems():
                 oldName = None
                 if differenceType == "changedName":
-                    followerName = followerName[1]
                     oldName = followerName[0]
+                    followerName = followerName[1]
 
                 s += formatStr.format(name=followerName, oldName=oldName) + '\n'
 
