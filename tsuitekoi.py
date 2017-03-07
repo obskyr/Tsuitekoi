@@ -1,11 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+from __future__ import print_function
+
 import os
 import time
 import webbrowser
 import tweepy
 from collections import OrderedDict
+
+try:
+    xrange
+except NameError:
+    pass
+else:
+    range = xrange
 
 consumerKey = "aQuxitwj1dXN6CXssk1Hjd6C0"
 consumerSecret = ''.join(''.join(p) for p in zip(
@@ -44,7 +54,7 @@ def handleRateLimit(cursor, handler):
 
 def printRateLimitStatus(api):
     a = api.rate_limit_status()
-    print "Rate limit status (method: uses/limit):"
+    print("Rate limit status (method: uses/limit):")
     for method, status in (
         (
             u"/followers/ids",
@@ -59,13 +69,13 @@ def printRateLimitStatus(api):
             a[u"resources"][u"application"][u"/application/rate_limit_status"]
         )
     ):
-        print "{method}:\t{uses}/{limit}".format(
+        print("{method}:\t{uses}/{limit}".format(
             method=method, uses=status["remaining"], limit=status["limit"]
-        )
-    print
+        ))
+    print()
 
 def chunks(sliceable, length):
-    for i in xrange(0, len(sliceable), length):
+    for i in range(0, len(sliceable), length):
         yield sliceable[i:i + length]
 
 class Program(object):
@@ -76,14 +86,14 @@ class Program(object):
             # Really useful for debug, it turns out:
             # printRateLimitStatus(self.api)
 
-            print "Loading your followers..."
-            print
+            print("Loading your followers...")
+            print()
             self.getFollowers()
 
             isDifference = True
             if self.previousTime is not None:
-                print "Calculating differences... We're almost done!"
-                print
+                print("Calculating differences... We're almost done!")
+                print()
                 self.getDifferences()
 
                 isDifference = \
@@ -91,7 +101,7 @@ class Program(object):
 
             if self.previousTime is not None and isDifference:
                 t = time.strftime("%B %d %Y", self.previousTime)
-                print "Here's what happened since {t}!".format(t=t)
+                print("Here's what happened since {t}!".format(t=t))
                 # t=t looks like one of those weird Japanese ducks.
                 # It's the twitter avatar of some game dev or
                 # artist, I think..? Maybe? I swear I've seen it.
@@ -103,33 +113,33 @@ class Program(object):
                 }
                 for differenceType in self.differences:
                     if self.differences[differenceType]:
-                        print nice[differenceType]
+                        print(nice[differenceType])
                     for followerId, followerName in \
-                    self.differences[differenceType].iteritems():
+                    self.differences[differenceType].items():
                         s = followerName
                         if differenceType == "changedName":
                             s = "{} changed name to {}".format(*followerName)
-                        print '\t' + s
+                        print('\t' + s)
                     if self.differences[differenceType]:
                         # Don't want to add newlines for empty sections.
-                        print
+                        print()
             elif not isDifference:
                 t = time.strftime("%B %d %Y", self.previousTime)
-                print "Nothing has happened since {t}, the last time you " \
-                "ran Tsuitekoi.".format(t=t)
+                print("Nothing has happened since {t}, the last time you "
+                      "ran Tsuitekoi.".format(t=t))
             else:
-                print "Thanks for running Tsuitekoi for the first time!"
-                print "Now you're all set to go for next time. Until then!"
-                print
+                print("Thanks for running Tsuitekoi for the first time!")
+                print("Now you're all set to go for next time. Until then!")
+                print()
 
             self.saveFollowers()
             self.saveLog()
 
         except RateLimitError:
-            print "Oops! It seems you've hit the rate limit for connecting" \
-            "to Twitter."
-            print "Try running Tsuitekoi again in 15 minutes or so!"
-            print
+            print("Oops! It seems you've hit the rate limit for connecting "
+                  "to Twitter.")
+            print("Try running Tsuitekoi again in 15 minutes or so!")
+            print()
 
     def getFollowers(self):
         self.previousFollowers = OrderedDict()
@@ -145,13 +155,13 @@ class Program(object):
             pass
 
         def rateWait():
-            print "Hit the rate limit while getting followers. You've " \
-            "got a lot of"
-            print "followers! Congratulations!"
-            print "This means Tsuitekoi has to wait another 15 minutes " \
-            "before continuing, though,"
-            print "so this is going to take a while."
-            print
+            print("Hit the rate limit while getting followers. You've "
+                  "got a lot of")
+            print("followers! Congratulations!")
+            print("This means Tsuitekoi has to wait another 15 minutes "
+                  "before continuing, though,")
+            print("so this is going to take a while.")
+            print()
             time.sleep(60 * 15)
 
         # Note: The following approach to getting followers is slightly hacky,
@@ -190,7 +200,7 @@ class Program(object):
             ("changedName", OrderedDict())
         ))
 
-        for followerId, followerName in self.followers.iteritems():
+        for followerId, followerName in self.followers.items():
             if followerId in self.previousFollowers:
                 oldName = self.previousFollowers[followerId]
                 if followerName != oldName:
@@ -199,12 +209,12 @@ class Program(object):
                 del self.previousFollowers[followerId]
             else:
                 self.differences["followed"][followerId] = followerName
-        for followerId, followerName in self.previousFollowers.iteritems():
+        for followerId, followerName in self.previousFollowers.items():
             self.differences["unfollowed"][followerId] = followerName
 
     def saveFollowers(self):
         s = time.strftime("%Y-%m-%d %H:%M:%S") + '\n\n'
-        for follower in self.followers.iteritems():
+        for follower in self.followers.items():
             s += str(follower[0]) + ':\t' + follower[1]
             s += '\n'
 
@@ -226,7 +236,7 @@ class Program(object):
         for differenceType in self.differences:
             formatStr = formats[differenceType]
             for followerId, followerName in \
-            self.differences[differenceType].iteritems():
+            self.differences[differenceType].items():
                 oldName = None
                 if differenceType == "changedName":
                     oldName = followerName[0]
@@ -254,12 +264,12 @@ class Program(object):
                 authorized = False
 
             if not authorized:
-                print "You will need to authorize Tsuitekoi to access your " \
-                "Twitter account."
-                print "Please click \"authorize app\" in the browser window " \
-                "that opens and"
-                print "copy the verifier number that appears into this window."
-                print
+                print("You will need to authorize Tsuitekoi to access your "
+                      "Twitter account.")
+                print("Please click \"authorize app\" in the browser window "
+                      "that opens and")
+                print("copy the verifier number that appears into this window.")
+                print()
 
                 redirectUrl = auth.get_authorization_url()
                 webbrowser.open(redirectUrl)
@@ -269,8 +279,8 @@ class Program(object):
                     try:
                         auth.get_access_token(verifier)
                     except tweepy.TweepError as e:
-                        print "That verifier doesn't work! Try again."
-                print
+                        print("That verifier doesn't work! Try again.")
+                print()
 
                 with open(authPath, 'w') as f:
                     s = auth.access_token + '\n' + auth.access_token_secret + '\n'
@@ -287,9 +297,9 @@ class Program(object):
                     os.remove(authPath)
                 except OSError:
                     pass
-                print "There was an error authenticating your account."
-                print "Please authenticate again."
-                print
+                print("There was an error authenticating your account.")
+                print("Please authenticate again.")
+                print()
 
 if __name__ == '__main__':
     tsuitekoi = Program()
